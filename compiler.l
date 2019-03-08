@@ -1,19 +1,22 @@
+%{
+    #include "y.tab.h"
+%}
 %%
-"main" {printf("tMAIN");}
-"{" {printf("tLCURL");}
-"}" {printf("tRCURL");}
-"(" {printf("tLPAR");}
-")" {printf("tRPAR");}
-"const" {printf("tCONST");}
-"int" {printf("tINT");}
-[A-Za-z][A-Za-z0-9_]* {printf("tID");}
-"," {printf("tCOMMA");}
-"+" {printf("tPLUS");}
-"-" {printf("tMINUS");}
-"*" {printf("tMUL");}
-"/" {printf("tDIV");}
-"=" {printf("tEQUAL");}
-";" {printf("tENDINST");}
-[0-9]+(\^[0-9]+)? {printf("tINTVAL");}
-[ \t\n]+ {printf(".");}
-"printf" {printf("tPRINTF");}
+"main" {return tMAIN;}
+"{" {return tLCURL;}
+"}" {return tRCURL;}
+"("  {return tLPAR;}
+")" {return tRPAR;}
+"const" {return tCONST;}
+"int" {return tINT;}
+"printf" {return tPRINTF;}
+"," {return tCOMMA;}
+"+" {return tPLUS;}
+"-" {return tMINUS;}
+"*" {return tMUL;}
+"/" {return tDIV;}
+"=" {return tEQUAL;}
+";" {return tENDINST;}
+[0-9]+(\^[0-9]+)? {return tINTVAL;}
+[A-Za-z][A-Za-z0-9_]* {return tID;}
+
