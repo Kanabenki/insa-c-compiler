@@ -1,3 +1,8 @@
+%{
+    int yylex();
+    void yyerror(char*);
+%}
+
 %token tMAIN 
 %token tLCURL
 %token tRCURL
@@ -15,5 +20,10 @@
 %token tENDINST
 %token tINTVAL
 %token tPRINTF
+
+
 %%
-start:tMAIN;
+start:tMAIN tLPAR tRPAR tLCURL body tRCURL;
+body: exprs | ;
+exprs: exprs | expr ;
+expr: tINT tID tEQUAL tINTVAL tENDINST; 
