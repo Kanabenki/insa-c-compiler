@@ -1,0 +1,2 @@
+%%
+"likes" {printf("tKLIKES\n");}
