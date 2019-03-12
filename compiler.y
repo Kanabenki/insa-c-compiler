@@ -22,14 +22,15 @@
 %token tPRINTF
 %token tSTRING
 
+%left tPLUS tMINUS
+%left tMUL tDIV
 
 %%
 start:tMAIN tLPAR tRPAR tLCURL body tRCURL;
 body: exprs | ;
 exprs: expr exprs | expr ;
 expr: exprL tENDINST | exprL tEQUAL expArth tENDINST | expArth tENDINST | tPRINTF tLPAR tSTRING tRPAR tENDINST;
-exprL: type tID | tID;
+exprL: type tID;
 type: tCONST tINT | tINT | tINT tCONST;
-expArth: tLCURL expArth tRCURL | expArth oper expArth | val;
-oper: tMUL | tDIV | tPLUS | tMINUS;
-val: tID | tINTVAL;
+expArth: tLCURL expArth tRCURL | expArth tMUL expArth | expArth tDIV expArth | expArth tPLUS expArth | expArth tMINUS expArth |val;
+val: tID | tINTVAL ;
