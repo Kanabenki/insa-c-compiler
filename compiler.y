@@ -20,10 +20,16 @@
 %token tENDINST
 %token tINTVAL
 %token tPRINTF
+%token tSTRING
 
 
 %%
 start:tMAIN tLPAR tRPAR tLCURL body tRCURL;
 body: exprs | ;
-exprs: exprs | expr ;
-expr: tINT tID tEQUAL tINTVAL tENDINST; 
+exprs: expr exprs | expr ;
+expr: exprL tENDINST | exprL tEQUAL expArth tENDINST | expArth tENDINST | tPRINTF tLPAR tSTRING tRPAR tENDINST;
+exprL: type tID | tID;
+type: tCONST tINT | tINT | tINT tCONST;
+expArth: tLCURL expArth tRCURL | expArth oper expArth | val;
+oper: tMUL | tDIV | tPLUS | tMINUS;
+val: tID | tINTVAL;

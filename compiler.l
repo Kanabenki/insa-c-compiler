@@ -18,5 +18,6 @@
 "=" {return tEQUAL;}
 ";" {return tENDINST;}
 [0-9]+(\^[0-9]+)? {return tINTVAL;}
+\"[A-Za-z0-9_ ]*\" {return tSTRING;}
 [A-Za-z][A-Za-z0-9_]* {return tID;}
 
