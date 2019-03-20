@@ -21,25 +21,44 @@ int get_size(type type) {
     return size;
 }
 
-void symbol_table_init(symbol_table *table, size_t size) {
-    table = malloc(sizeof(symbol_table));
-    table->tab = malloc(size * sizeof(symbol));
+int symbol_table_init(symbol_table *table, size_t size) {
+    if ((table = malloc(sizeof(symbol_table))) == NULL) {
+        return -1;
+    }
+    if ((table->tab = malloc(size * sizeof(symbol))) == NULL){
+        return -1;
+    }
+    
     table->length = size;
     table->position = 0;
 
     (table->tab[0]).address = 4000;
+    (table->tab[0]).depth = -1;
+    return 0;
 }
 
 void symbol_table_pop(symbol_table *table) {
-    table->position--;
+    if (table->position == 0) {
+        return;
+    }
+    free(table->tab[table->position--].name);
 }
 
-void symbol_table_push(symbol_table *table, char *name, type type, int depth) {
+void symbol_table_pop_depth(symbol_table *table) {
+    int depth = table->tab[table->position].depth;
+    while (table->tab[table->position].depth == depth) {
+        symbol_table_pop(table);
+    }
+}
+
+void symbol_table_push(symbol_table *table, char *name, type type, int depth, char is_const) {
     int prev_addr = table->tab[table->position].address;
     symbol *sym = &table->tab[++table->position];
     sym->address = prev_addr + get_size(type);
+    sym->name = strdup(name);
     sym->type = type;
     sym->depth = depth;
+    sym->is_const = is_const;
 }
 
 symbol* get_symbol_from_name(symbol_table *table, char* name) {

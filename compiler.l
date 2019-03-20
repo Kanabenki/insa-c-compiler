@@ -17,7 +17,7 @@
 "/" {return tDIV;}
 "=" {return tEQUAL;}
 ";" {return tENDINST;}
-[0-9]+(\^[0-9]+)? {return tINTVAL;}
-\"[A-Za-z0-9_ ]*\" {return tSTRING;}
-[A-Za-z][A-Za-z0-9_]* {return tID;}
+[0-9]+(\^[0-9]+)? {yylval.text = strdup(yytext); return tINTVAL;}
+\"[A-Za-z0-9_ ]*\" {yylval.text = strdup(yytext); return tSTRING;}
+[A-Za-z][A-Za-z0-9_]* {yylval.text = strdup(yytext); return tID;}
 

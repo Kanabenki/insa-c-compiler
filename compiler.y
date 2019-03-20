@@ -1,6 +1,13 @@
 %{
+    #include <stdio.h>
+    #include <stdlib.h>
+
+    #include "tab_symbol.h"
+
     int yylex();
     void yyerror(char*);
+
+    symbol_table *table;
 %}
 
 %token tMAIN 
@@ -26,7 +33,16 @@
 %left tMUL tDIV
 
 %%
-start:tMAIN tLPAR tRPAR tLCURL body tRCURL;
+
+init: {
+        if (symbol_table_init(table, 1024) != 0) {
+            printf("[SYMBOL] Error initializing symbol table\n");
+            exit(1);
+        }
+        printf("[SYMBOL] Symbol table initialized\n");
+    } start;
+
+start: tMAIN tLPAR tRPAR tLCURL body tRCURL;
 body: exprs | ;
 exprs: expr exprs | expr ;
 expr: exprL tENDINST | exprL tEQUAL expArth tENDINST | expArth tENDINST | tPRINTF tLPAR tSTRING tRPAR tENDINST;
