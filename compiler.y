@@ -57,4 +57,6 @@ type: tCONST tINT { curr_type = INT; curr_const = 1;}
     | tINT { curr_type = INT; curr_const = 0;}
     | tINT tCONST { curr_type = INT; curr_const = 0;} 
 expArth: tLCURL expArth tRCURL | expArth tMUL expArth | expArth tDIV expArth | expArth tPLUS expArth | expArth tMINUS expArth |val;
-val: tID | tINTVAL ;
+val: tID | tINTVAL {int add_temp = add_temporary_symbol(table,curr_type); printf("AFC 0 %s", yylval.text);  printf("STORE %d", add_temp);};
+
+//TODO LE DEPOP DES VARIABLES TEMPORAIRE ET TROUVER POURQUOI çA PRINT PAS :'(

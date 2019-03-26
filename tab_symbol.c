@@ -33,7 +33,7 @@ int symbol_table_init(symbol_table **table, size_t size) {
     (*table)->position = 0;
 
     ((*table)->tab[0]).address = 4000;
-    ((*table)->tab[0]).depth = -1;
+    ((*table)->tab[0]).depth = -2;
     return 0;
 }
 
@@ -79,4 +79,14 @@ void print_table(symbol_table *table) {
         printf("[DEBUG] Index: %d Address: %d Name: %s Type: %d Depth: %d Const: %d\n",
             i, s.address, s.name, s.type, s.depth, s.is_const);
     }
+}
+
+int add_temporary_symbol(symbol_table *table, type type) {
+
+    int prev_addr = (table->tab[table->position]).address;
+    symbol *sym = &(table->tab[++table->position]);
+    sym->address = prev_addr + get_size(type);
+    sym->depth = -1;
+    return sym->address;
+
 }
