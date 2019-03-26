@@ -27,6 +27,7 @@ void print_table(symbol_table *table);
 
 int symbol_table_init(symbol_table **table, size_t size);
 void symbol_table_pop(symbol_table *table);
+void symbol_table_pop_depth(symbol_table *table);
 void symbol_table_push(symbol_table *table, char *name, type type, int depth, char is_const);
 
 symbol* get_symbol_from_name(symbol_table *table, char* name);

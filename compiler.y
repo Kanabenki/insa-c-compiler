@@ -46,9 +46,9 @@ init: {
             exit(1);
         }
         printf("[SYMBOL] Symbol table initialized\n");
-    } start {print_table(table);}
+    } start;
 
-start: tMAIN tLPAR tRPAR tLCURL body tRCURL;
+start: tMAIN tLPAR tRPAR tLCURL{curr_depth++;} body tRCURL { print_table(table); printf("[SYMBOL] Pop symbol table\n"); symbol_table_pop_depth(table); print_table(table);curr_depth--;};
 body: exprs | ;
 exprs: expr exprs | expr ;
 expr: exprL tENDINST | exprL tEQUAL expArth tENDINST | expArth tENDINST | tPRINTF tLPAR tSTRING tRPAR tENDINST;
