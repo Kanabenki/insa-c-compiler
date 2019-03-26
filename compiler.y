@@ -10,6 +10,9 @@
     symbol_table *table;
 %}
 
+%union {
+    char *text;
+}
 %token tMAIN 
 %token tLCURL
 %token tRCURL
