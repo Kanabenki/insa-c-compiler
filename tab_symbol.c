@@ -21,19 +21,19 @@ int get_size(type type) {
     return size;
 }
 
-int symbol_table_init(symbol_table *table, size_t size) {
-    if ((table = malloc(sizeof(symbol_table))) == NULL) {
+int symbol_table_init(symbol_table **table, size_t size) {
+    if ((*table = malloc(size * sizeof(symbol_table))) == NULL) {
         return -1;
     }
-    if ((table->tab = malloc(size * sizeof(symbol))) == NULL){
+    if (((*table)->tab = malloc(size * sizeof(symbol))) == NULL) {
         return -1;
     }
     
-    table->length = size;
-    table->position = 0;
+    (*table)->length = size;
+    (*table)->position = 0;
 
-    (table->tab[0]).address = 4000;
-    (table->tab[0]).depth = -1;
+    ((*table)->tab[0]).address = 4000;
+    ((*table)->tab[0]).depth = -1;
     return 0;
 }
 
@@ -52,8 +52,8 @@ void symbol_table_pop_depth(symbol_table *table) {
 }
 
 void symbol_table_push(symbol_table *table, char *name, type type, int depth, char is_const) {
-    int prev_addr = table->tab[table->position].address;
-    symbol *sym = &table->tab[++table->position];
+    int prev_addr = (table->tab[table->position]).address;
+    symbol *sym = &(table->tab[++table->position]);
     sym->address = prev_addr + get_size(type);
     sym->name = strdup(name);
     sym->type = type;
@@ -70,4 +70,13 @@ symbol* get_symbol_from_name(symbol_table *table, char* name) {
         }
     }
     return sym;
+}
+
+void print_table(symbol_table *table) {
+    printf("[DEBUG] Symbol table content\n");
+    for (int i = 1; i <= table->position; i++) {
+        symbol s = table->tab[i];
+        printf("[DEBUG] Index: %d Address: %d Name: %s Type: %d Depth: %d Const: %d\n",
+            i, s.address, s.name, s.type, s.depth, s.is_const);
+    }
 }

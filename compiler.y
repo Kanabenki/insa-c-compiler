@@ -8,6 +8,9 @@
     void yyerror(char*);
 
     symbol_table *table;
+    type curr_type = INT;
+    char curr_const = 0;
+    int curr_depth = 0;
 %}
 
 %union {
@@ -38,18 +41,20 @@
 %%
 
 init: {
-        if (symbol_table_init(table, 1024) != 0) {
+        if (symbol_table_init(&table, 1024) != 0) {
             printf("[SYMBOL] Error initializing symbol table\n");
             exit(1);
         }
         printf("[SYMBOL] Symbol table initialized\n");
-    } start;
+    } start {print_table(table);}
 
 start: tMAIN tLPAR tRPAR tLCURL body tRCURL;
 body: exprs | ;
 exprs: expr exprs | expr ;
 expr: exprL tENDINST | exprL tEQUAL expArth tENDINST | expArth tENDINST | tPRINTF tLPAR tSTRING tRPAR tENDINST;
-exprL: type tID;
-type: tCONST tINT | tINT | tINT tCONST;
+exprL: type tID {symbol_table_push(table, yylval.text, curr_type, curr_depth, curr_const);}
+type: tCONST tINT { curr_type = INT; curr_const = 1;}
+    | tINT { curr_type = INT; curr_const = 0;}
+    | tINT tCONST { curr_type = INT; curr_const = 0;} 
 expArth: tLCURL expArth tRCURL | expArth tMUL expArth | expArth tDIV expArth | expArth tPLUS expArth | expArth tMINUS expArth |val;
 val: tID | tINTVAL ;
