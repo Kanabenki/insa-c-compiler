@@ -13,12 +13,64 @@
     int curr_depth = 0;
     FILE *asm_file;
 
+    void asm_add(int reg_store, int reg_a, int reg_b) {
+        fprintf(asm_file, "ADD %d %d %d\n", reg_store, reg_a, reg_b);
+    }
+
+    void asm_mul(int reg_store, int reg_a, int reg_b) {
+        fprintf(asm_file, "MUL %d %d %d\n", reg_store, reg_a, reg_b);
+    }
+
+    void asm_sou(int reg_store, int reg_a, int reg_b) {
+        fprintf(asm_file, "SOU %d %d %d\n", reg_store, reg_a, reg_b);
+    }
+
+    void asm_div(int reg_store, int reg_a, int reg_b) {
+        fprintf(asm_file, "DIV %d %d %d\n", reg_store, reg_a, reg_b);
+    }
+
+    void asm_sou(int reg_store, int reg_val) {
+        fprintf(asm_file, "COP %d %d\n", reg_store, reg_val);
+    }
+
     void asm_afc(int reg, int val) {
         fprintf(asm_file, "AFC %d %d\n", reg, val);
     }
 
+    void asm_load(int reg, int addr) {
+        fprintf(asm_file, "LOAD %d %d\n", reg, addr);
+    }
+
     void asm_store(int addr, int reg) {
         fprintf(asm_file, "STORE %d %d\n", addr, reg);
+    }
+
+    void asm_equ(int reg_store, int reg_a, int reg_b) {
+        fprintf(asm_file, "EQU %d %d %d\n", reg_store, reg_a, reg_b);
+    }
+
+    void asm_inf(int reg_store, int reg_a, int reg_b) {
+        fprintf(asm_file, "INF %d %d %d\n", reg_store, reg_a, reg_b);
+    }
+
+    void asm_infe(int reg_store, int reg_a, int reg_b) {
+        fprintf(asm_file, "INFE %d %d %d\n", reg_store, reg_a, reg_b);
+    }
+
+    void asm_sup(int reg_store, int reg_a, int reg_b) {
+        fprintf(asm_file, "SUP %d %d %d\n", reg_store, reg_a, reg_b);
+    }
+
+    void asm_supe(int reg_store, int reg_a, int reg_b) {
+        fprintf(asm_file, "SUPE %d %d %d\n", reg_store, reg_a, reg_b);
+    }
+
+    void asm_jmp(int addr) {
+        fprintf(asm_file, "JMP %d\n", addr);
+    }
+
+    void asm_jmpc(int addr, int reg) {
+        fprintf(asm_file, "JMPC %d %d\n", addr, reg);
     }
 %}
 
