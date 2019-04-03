@@ -90,3 +90,7 @@ int add_temporary_symbol(symbol_table *table, type type) {
     return sym->address;
 
 }
+
+int get_curr_depth(symbol_table *table) {
+    return table->tab[table->position].depth;
+}

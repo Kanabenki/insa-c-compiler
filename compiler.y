@@ -11,9 +11,19 @@
     type curr_type = INT;
     char curr_const = 0;
     int curr_depth = 0;
+    FILE *asm_file;
+
+    void asm_afc(int reg, int val) {
+        fprintf(asm_file, "AFC %d %d\n", reg, val);
+    }
+
+    void asm_store(int addr, int reg) {
+        fprintf(asm_file, "STORE %d %d\n", addr, reg);
+    }
 %}
 
 %union {
+    int nb;
     char *text;
 }
 %token tMAIN 
@@ -41,6 +51,7 @@
 %%
 
 init: {
+        asm_file = fopen("out.asm", "w");
         if (symbol_table_init(&table, 1024) != 0) {
             printf("[SYMBOL] Error initializing symbol table\n");
             exit(1);
@@ -55,8 +66,8 @@ expr: exprL tENDINST | exprL tEQUAL expArth tENDINST | expArth tENDINST | tPRINT
 exprL: type tID {symbol_table_push(table, yylval.text, curr_type, curr_depth, curr_const);}
 type: tCONST tINT { curr_type = INT; curr_const = 1;}
     | tINT { curr_type = INT; curr_const = 0;}
-    | tINT tCONST { curr_type = INT; curr_const = 0;} 
+    | tINT tCONST { curr_type = INT; curr_const = 0;}
 expArth: tLCURL expArth tRCURL | expArth tMUL expArth | expArth tDIV expArth | expArth tPLUS expArth | expArth tMINUS expArth |val;
-val: tID | tINTVAL {int add_temp = add_temporary_symbol(table,curr_type); printf("AFC 0 %s", yylval.text);  printf("STORE %d", add_temp);};
+val: tID | tINTVAL {int add_temp = add_temporary_symbol(table,curr_type); asm_afc(0, yylval.nb),  asm_store(add_temp, 0);};
 
 //TODO LE DEPOP DES VARIABLES TEMPORAIRE ET TROUVER POURQUOI çA PRINT PAS :'(
