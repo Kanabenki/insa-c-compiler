@@ -29,7 +29,7 @@
         fprintf(asm_file, "DIV %d %d %d\n", reg_store, reg_a, reg_b);
     }
 
-    void asm_sou(int reg_store, int reg_val) {
+    void asm_cop(int reg_store, int reg_val) {
         fprintf(asm_file, "COP %d %d\n", reg_store, reg_val);
     }
 
@@ -114,7 +114,7 @@ init: {
 start: tMAIN tLPAR tRPAR tLCURL{curr_depth++;} body tRCURL { print_table(table); printf("[SYMBOL] Pop symbol table\n"); symbol_table_pop_depth(table); print_table(table);curr_depth--;};
 body: exprs | ;
 exprs: expr exprs | expr ;
-expr: exprL tENDINST | exprL tEQUAL expArth tENDINST | expArth tENDINST | tPRINTF tLPAR tSTRING tRPAR tENDINST;
+expr: exprL tENDINST | exprL tEQUAL expArth tENDINST {if(get_curr_depth(table)==-1){symbol_table_pop_depth(table);}}| expArth tENDINST {if(get_curr_depth(table)==-1){symbol_table_pop_depth(table);}} | tPRINTF tLPAR tSTRING tRPAR tENDINST;
 exprL: type tID {symbol_table_push(table, yylval.text, curr_type, curr_depth, curr_const);}
 type: tCONST tINT { curr_type = INT; curr_const = 1;}
     | tINT { curr_type = INT; curr_const = 0;}
