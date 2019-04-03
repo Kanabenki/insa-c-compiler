@@ -33,6 +33,7 @@ int symbol_table_init(symbol_table **table, size_t size) {
     (*table)->position = 0;
 
     ((*table)->tab[0]).address = 4000;
+    ((*table)->tab[0]).alloc = 1;
     ((*table)->tab[0]).depth = -2;
     return 0;
 }
@@ -52,13 +53,19 @@ void symbol_table_pop_depth(symbol_table *table) {
 }
 
 void symbol_table_push(symbol_table *table, char *name, type type, int depth, char is_const) {
-    int prev_addr = (table->tab[table->position]).address;
+    int pos = table->position;
+    while(!table->tab[pos].alloc) {
+        pos--;
+    }
+    int prev_addr = (table->tab[pos]).address;
+    int prev_type = (table->tab[pos]).type;
     symbol *sym = &(table->tab[++table->position]);
-    sym->address = prev_addr + get_size(type);
+    sym->address = prev_addr + get_size(prev_type);
     sym->name = strdup(name);
     sym->type = type;
     sym->depth = depth;
     sym->is_const = is_const;
+    sym->alloc = 1;
 }
 
 symbol* get_symbol_from_name(symbol_table *table, char* name) {
@@ -81,14 +88,21 @@ void print_table(symbol_table *table) {
     }
 }
 
-int add_temporary_symbol(symbol_table *table, type type) {
+symbol* add_temporary_symbol(symbol_table *table, type type) {
 
     int prev_addr = (table->tab[table->position]).address;
     symbol *sym = &(table->tab[++table->position]);
     sym->address = prev_addr + get_size(type);
     sym->depth = -1;
-    return sym->address;
+    sym->alloc = 1;
+    return sym;
 
+}
+
+symbol* add_temporary_symbol_redirect(symbol_table *table, symbol *redir_symbol) {
+    symbol *sym = add_temporary_symbol(table, redir_symbol->type);
+    sym->alloc = 0;
+    sym->address = redir_symbol->address;
 }
 
 int get_curr_depth(symbol_table *table) {

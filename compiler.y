@@ -120,6 +120,5 @@ type: tCONST tINT { curr_type = INT; curr_const = 1;}
     | tINT { curr_type = INT; curr_const = 0;}
     | tINT tCONST { curr_type = INT; curr_const = 0;}
 expArth: tLCURL expArth tRCURL | expArth tMUL expArth | expArth tDIV expArth | expArth tPLUS expArth | expArth tMINUS expArth |val;
-val: tID | tINTVAL {int add_temp = add_temporary_symbol(table,curr_type); asm_afc(0, yylval.nb),  asm_store(add_temp, 0);};
-
-//TODO LE DEPOP DES VARIABLES TEMPORAIRE ET TROUVER POURQUOI çA PRINT PAS :'(
+val: tID {symbol *sym = get_symbol_from_name(table, yylval.text); symbol *temp = add_temporary_symbol_redirect(table, sym);}
+    | tINTVAL {symbol *temp = add_temporary_symbol(table, INT); asm_afc(0, yylval.nb),  asm_store(temp->address, 0);};
