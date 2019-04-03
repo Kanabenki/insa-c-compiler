@@ -108,3 +108,7 @@ symbol* add_temporary_symbol_redirect(symbol_table *table, symbol *redir_symbol)
 int get_curr_depth(symbol_table *table) {
     return table->tab[table->position].depth;
 }
+
+symbol* get_last_symbol(symbol_table* table) {
+    return &(table->tab[table->position]);
+}

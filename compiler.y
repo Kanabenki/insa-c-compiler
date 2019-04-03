@@ -72,6 +72,15 @@
     void asm_jmpc(int addr, int reg) {
         fprintf(asm_file, "JMPC %d %d\n", addr, reg);
     }
+
+    type asm_load_symbols_op() {
+        type type = get_last_symbol(table)->type;
+        asm_load(0, get_last_symbol(table)->address);
+        symbol_table_pop(table);
+        asm_load(1, get_last_symbol(table)->address);
+        symbol_table_pop(table);
+        return type;
+    }
 %}
 
 %union {
@@ -119,6 +128,11 @@ exprL: type tID {symbol_table_push(table, yylval.text, curr_type, curr_depth, cu
 type: tCONST tINT { curr_type = INT; curr_const = 1;}
     | tINT { curr_type = INT; curr_const = 0;}
     | tINT tCONST { curr_type = INT; curr_const = 0;}
-expArth: tLCURL expArth tRCURL | expArth tMUL expArth | expArth tDIV expArth | expArth tPLUS expArth | expArth tMINUS expArth |val;
+expArth: tLCURL expArth tRCURL
+    | expArth tMUL expArth {type op_type = asm_load_symbols_op(); asm_mul(0, 0, 1); symbol* sym = add_temporary_symbol(table, op_type); asm_store(sym->address, 0);}
+    | expArth tDIV expArth {type op_type = asm_load_symbols_op(); asm_div(0, 0, 1);  symbol* sym = add_temporary_symbol(table, op_type); asm_store(sym->address, 0);}
+    | expArth tPLUS expArth {type op_type = asm_load_symbols_op(); asm_add(0, 0, 1);  symbol* sym = add_temporary_symbol(table, op_type); asm_store(sym->address, 0);}
+    | expArth tMINUS expArth {type op_type = asm_load_symbols_op(); asm_sou(0, 0, 1);  symbol* sym = add_temporary_symbol(table, op_type); asm_store(sym->address, 0);}
+    | val;
 val: tID {symbol *sym = get_symbol_from_name(table, yylval.text); symbol *temp = add_temporary_symbol_redirect(table, sym);}
     | tINTVAL {symbol *temp = add_temporary_symbol(table, INT); asm_afc(0, yylval.nb),  asm_store(temp->address, 0);};

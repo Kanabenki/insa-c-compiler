@@ -35,3 +35,4 @@ symbol* add_temporary_symbol(symbol_table *table, type type);
 symbol* add_temporary_symbol_redirect(symbol_table *table, symbol *redir_symbol);
 symbol* get_symbol_from_name(symbol_table *table, char* name);
 int get_curr_depth(symbol_table *table);
+symbol* get_last_symbol(symbol_table* table);
