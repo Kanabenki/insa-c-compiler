@@ -1,5 +1,5 @@
 main() {
-    int a = 3;
+    int a = 4004;
     const int b = 42;
     int c = a + b ;
     int d;

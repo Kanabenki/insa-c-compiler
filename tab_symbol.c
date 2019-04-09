@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "utils.h"
 #include "tab_symbol.h"
 
 //function
@@ -32,7 +33,8 @@ int symbol_table_init(symbol_table **table, size_t size) {
     (*table)->length = size;
     (*table)->position = 0;
 
-    ((*table)->tab[0]).address = 4000;
+    ((*table)->tab[0]).address = 4000 - get_size(INT);
+    ((*table)->tab[0]).type = INT;
     ((*table)->tab[0]).alloc = 1;
     ((*table)->tab[0]).depth = -2;
     return 0;
@@ -52,7 +54,7 @@ void symbol_table_pop_depth(symbol_table *table) {
     }
 }
 
-void symbol_table_push(symbol_table *table, char *name, type type, int depth, char is_const) {
+symbol* symbol_table_push(symbol_table *table, char *name, type type, int depth, char is_const) {
     int pos = table->position;
     while(!table->tab[pos].alloc) {
         pos--;
@@ -66,6 +68,7 @@ void symbol_table_push(symbol_table *table, char *name, type type, int depth, ch
     sym->depth = depth;
     sym->is_const = is_const;
     sym->alloc = 1;
+    return sym;
 }
 
 symbol* get_symbol_from_name(symbol_table *table, char* name) {
