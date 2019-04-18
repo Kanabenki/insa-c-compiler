@@ -10,6 +10,12 @@
 "const" {return tCONST;}
 "int" {return tINT;}
 "printf" {return tPRINTF;}
+"==" {return tBOOLEQUAL;}
+"!=" {return tINEQUAL;}
+">=" {return tSUPE;}
+"<=" {return tINFE;}
+">" {return tSUP;}
+"<" {return tINF;}
 "," {return tCOMMA;}
 "+" {return tPLUS;}
 "-" {return tMINUS;}
@@ -17,6 +23,10 @@
 "/" {return tDIV;}
 "=" {return tEQUAL;}
 ";" {return tENDINST;}
+"if" {return tIF;}
+"while" {return tWHILE;}
+"&&" {return tAND;}
+"||" {return tOR;}
 [0-9]+(\^[0-9]+)? {yylval.nb = atoi(yytext); return tINTVAL;}
 \"[A-Za-z0-9_ ]*\" {yylval.text = strdup(yytext); return tSTRING;}
 [A-Za-z][A-Za-z0-9_]* {yylval.text = strdup(yytext); return tID;}
