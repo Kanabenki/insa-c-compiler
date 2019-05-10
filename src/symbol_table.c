@@ -3,7 +3,7 @@
 #include <string.h>
 
 #include "utils.h"
-#include "tab_symbol.h"
+#include "symbol_table.h"
 
 //function
 //TODO error handling
@@ -92,20 +92,19 @@ void print_table(symbol_table *table) {
 }
 
 symbol* add_temporary_symbol(symbol_table *table, type type) {
-
     int prev_addr = (table->tab[table->position]).address;
     symbol *sym = &(table->tab[++table->position]);
     sym->address = prev_addr + get_size(type);
     sym->depth = -1;
     sym->alloc = 1;
     return sym;
-
 }
 
 symbol* add_temporary_symbol_redirect(symbol_table *table, symbol *redir_symbol) {
     symbol *sym = add_temporary_symbol(table, redir_symbol->type);
     sym->alloc = 0;
     sym->address = redir_symbol->address;
+    return sym;
 }
 
 int get_curr_depth(symbol_table *table) {

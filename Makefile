@@ -1,9 +1,9 @@
 all: compiler
 
-compiler: compiler.l compiler.y tab_symbol.c tab_symbol.h
-	flex -d compiler.l
-	yacc -d -v compiler.y
-	gcc -o compiler tab_symbol.c y.tab.c lex.yy.c -ly -lfl -g
+compiler: src/compiler.l src/compiler.y src/symbol_table.c src/symbol_table.h src/instruction_table.h src/instruction_table.c
+	flex -d src/compiler.l
+	yacc -d -v src/compiler.y
+	gcc -I src -o compiler y.tab.c lex.yy.c src/symbol_table.c src/instruction_table.c -ly -lfl -g -Wall
 
 clean:
 	rm lex.yy.c compiler
