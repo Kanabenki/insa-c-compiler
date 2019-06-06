@@ -17,22 +17,6 @@
     FILE *asm_file;
     FILE *bin_file;
 
-    void asm_add(u8 reg_store, u8 reg_a, u8 reg_b) {
-        instr_add(tab_instr, ADD, reg_store, reg_a, reg_b);
-    }
-
-    void asm_mul(u8 reg_store, u8 reg_a, u8 reg_b) {
-        instr_add(tab_instr, MUL, reg_store, reg_a, reg_b);
-    }
-
-    void asm_sou(u8 reg_store, u8 reg_a, u8 reg_b) {
-        instr_add(tab_instr, SOU, reg_store, reg_a, reg_b);
-    }
-
-    void asm_div(u8 reg_store, u8 reg_a, u8 reg_b) {
-        instr_add(tab_instr, DIV, reg_store, reg_a, reg_b);
-    }
-
     void asm_cop(u8 reg_store, u8 reg_val) {
         instr_add(tab_instr, COP, reg_store, reg_val, 0);
     }
@@ -49,52 +33,54 @@
         instr_add(tab_instr, STORE, HIGHB(addr), LOWB(addr), reg);
     }
 
-    void asm_equ(u8 reg_store, u8 reg_a, u8 reg_b) {
-        instr_add(tab_instr, EQU, reg_store, reg_a, reg_b);
-    }
-
-    void asm_nequ(u8 reg_store, u8 reg_a, u8 reg_b) {
-        instr_add(tab_instr, NEQU, reg_store, reg_a, reg_b);
-    }
-
-    void asm_inf(u8 reg_store, u8 reg_a, u8 reg_b) {
-        instr_add(tab_instr, INF, reg_store, reg_a, reg_b);
-    }
-
-    void asm_infe(u8 reg_store, u8 reg_a, u8 reg_b) {
-        instr_add(tab_instr, INFE, reg_store, reg_a, reg_b);
-    }
-
-    void asm_sup(u8 reg_store, u8 reg_a, u8 reg_b) {
-        instr_add(tab_instr, SUP, reg_store, reg_a, reg_b);
-    }
-
-    void asm_supe(u8 reg_store, u8 reg_a, u8 reg_b) {
-        instr_add(tab_instr, SUPE, reg_store, reg_a, reg_b);
-    }
-
     void asm_jmp(u16 addr) {
         instr_add(tab_instr, JMP, HIGHB(addr), LOWB(addr), 0);
     }
 
-    void asm_jmpc(u16 addr, u8 reg) {
-        instr_add(tab_instr, JMPC, HIGHB(addr), LOWB(addr), 0);
+    instr *asm_jmpc(u16 addr, u8 reg) {
+        return instr_add(tab_instr, JMPC, HIGHB(addr), LOWB(addr), 0);
     }
 
     type asm_load_symbols_op() {
         type type = get_last_symbol(table)->type;
         asm_load(0, get_last_symbol(table)->address);
+        printf("POP1");
+        print_table(table);
         symbol_table_pop(table);
+        print_table(table);
         asm_load(1, get_last_symbol(table)->address);
+        printf("POP2");
+        print_table(table);
         symbol_table_pop(table);
+        print_table(table);
         return type;
     }
 
-    void calc_exp_arth(void (*asm_fn)(u8, u8, u8), u8 reg_store, u8 reg_a, u8 reg_b) {
+    void calc_exp_arth(operation oper, u8 reg_store, u8 reg_a, u8 reg_b) {
         type op_type = asm_load_symbols_op(); 
-        asm_fn(reg_store, reg_a, reg_b);
+        instr_add(tab_instr, oper, reg_store, reg_a, reg_b);
         symbol* sym = add_temporary_symbol(table, op_type);
         asm_store(sym->address, 0);
+    }
+
+    void asm_log_or(u8 reg_store, u8 reg_a, u8 reg_b) { //TODO short circuit eval and fix
+        
+        calc_exp_arth(OR, reg_store, reg_a, reg_b);
+        asm_afc(reg_a, 0);
+        calc_exp_arth(NEQU, reg_store, reg_store, reg_a);
+    }
+
+    void asm_log_and(u8 reg_store, u8 reg_a, u8 reg_b) { //TODO short circuit eval and fix
+        calc_exp_arth(AND, reg_store, reg_a, reg_b);
+        asm_afc(reg_a, 0);
+        calc_exp_arth(NEQU, reg_store, reg_store, reg_a);
+    }
+
+    void rewrite_prev_jump() {
+        instr * i = instr_pop_rewrite(tab_instr)->instruction;
+        u16 pos = tab_instr->position;
+        i->val0 = HIGHB(pos);
+        i->val1 = LOWB(pos);
     }
 %}
 
@@ -127,93 +113,136 @@
 %token tSUP
 %token tINF
 %token tIF
+%token tELSE
 %token tWHILE
 %token tAND
 %token tOR
+%token tXORBIN
+%token tANDBIN
+%token tORBIN
 
 %left tBOOLEQUAL tINEQUAL
 %left tSUPE tSUP tINF tINFE 
 %left tPLUS tMINUS
 %left tMUL tDIV
+%left tANDBIN
+%left tXORBIN
+%left tORBIN
+%left tAND
+%left tOR
 
 %%
 
 init: {
         asm_file = fopen("out.asm", "w");
         bin_file = fopen("out.bin", "w");
-        if (instr_table_init(&tab_instr, 1024) != 0) {
+        if (instr_table_init(&tab_instr, 1024, 256) != 0) {
             printf("[INSTR] Error initializing instruction table\n");
             exit(1);
         }
-        if (symbol_table_init(&table, 1024) != 0) {
+        if (symbol_table_init(&table, 1024, 0x100) != 0) {
             printf("[SYMBOL] Error initializing symbol table\n");
             exit(1);
         }
     } start;
 
-start: tMAIN tLPAR tRPAR tLCURL {
-    curr_depth++;
-} 
-    body tRCURL {
+start: globExprs tMAIN tLPAR tRPAR
+    body globExprs {
+    printf("Compilation succedeed\n");
     print_table(table);
-    printf("[SYMBOL] Pop symbol table\n");
-    symbol_table_pop_depth(table);
-    print_table(table);
-    curr_depth--;
 
     instr_table_write_bin(tab_instr, bin_file);
     instr_table_write_asm(tab_instr, asm_file);
+
+
 };
-body: exprs | ;
-exprs: expr exprs | expr ;
+body: {curr_depth++;} tLCURL exprs tRCURL {printf("Current DEPTH before pop: %d\n", curr_depth);print_table(table); symbol_table_pop_depth(table, curr_depth); print_table(table); curr_depth--;};
+globExprs: exprL tENDINST globExprs | ;
+exprs: expr exprs | body exprs | ;
 expr: exprL tEQUAL expArth tENDINST  {
     symbol *tmp_sym = get_last_symbol(table);
     asm_load(0, tmp_sym->address);
     asm_store(affect_sym->address, 0);
-    if (get_curr_depth(table)==-1) {
-        symbol_table_pop_depth(table);
-    }
+    symbol_table_pop(table);
 }
     | expArth tENDINST {
-    if (get_curr_depth(table)==-1) {
-        symbol_table_pop_depth(table);
-    }
+    symbol_table_pop(table);
 }
     | type tID tENDINST {
         symbol_table_push(table, yylval.text, curr_type, curr_depth, curr_const);
     }
     | tPRINTF tLPAR tSTRING tRPAR tENDINST
-    | tIF tLPAR expArth tRPAR {
-        //asm_jmpc(0xFF,0xF); //TODO fix
-        //get_last_position(instr_table);
+    | ifExprs
+    | tWHILE tLPAR expArth tRPAR { //FIXME wrong jmp address
+        instr_add_rewrite(tab_instr, JMPC, 0, 0, 0);
+    } body {
+        instr_rewrite *ire = instr_pop_rewrite(tab_instr);
+        asm_jmp(ire->position);
+        instr *i = ire->instruction;
+        u16 pos = tab_instr->position;
+        i->val0 = HIGHB(pos);
+        i->val1 = LOWB(pos);
+    } 
+//    | tFOR tLPAR trRPAR body ;
+ifExprs: ifExpr | ifExpr tELSE ifExprs | ifExpr tELSE body;
+ifExpr: tIF tLPAR expArth tRPAR {
+        instr_add_rewrite(tab_instr, JMPC, 0, 0, 0);
     }
-     tLCURL body tRCURL 
-    | tWHILE tLPAR expArth tRPAR tLCURL body tRCURL ;
+     body {
+        rewrite_prev_jump();
+    }
 exprL: type tID {
-    affect_sym = symbol_table_push(table, yylval.text, curr_type, curr_depth, curr_const);
+    if (get_symbol_from_name(table, yylval.text, curr_depth) == NULL) {
+        affect_sym = symbol_table_push(table, yylval.text, curr_type, curr_depth, curr_const);
+    } else {
+        printf("[ERROR] Redeclaration of existing symbol %s\n", yylval.text);
+        exit(1);
+    }
+    
 }
     | tID  {
-    affect_sym = get_symbol_from_name(table, yylval.text);
+    affect_sym = get_symbol_from_name(table, yylval.text, curr_depth);
+    if (affect_sym == NULL) {
+        printf("[ERROR] Non existing symbol %s\n", yylval.text);
+        exit(1);
+    }
 };
 
 type: tCONST tINT { curr_type = INT; curr_const = 1;}
     | tINT tCONST { curr_type = INT; curr_const = 1;}
     | tINT { curr_type = INT; curr_const = 0;};
 
-expArth: tLCURL expArth tRCURL
-    | expArth tMUL expArth {calc_exp_arth(&asm_mul, 0, 0, 1);}
-    | expArth tDIV expArth {calc_exp_arth(&asm_div, 0, 0, 1);}
-    | expArth tPLUS expArth {calc_exp_arth(&asm_add, 0, 0, 1);}
-    | expArth tMINUS expArth {calc_exp_arth(&asm_sou, 0, 0, 1);}
-    | expArth tBOOLEQUAL expArth {calc_exp_arth(&asm_equ, 0, 0, 1);}
-    | expArth tINEQUAL expArth {calc_exp_arth(&asm_nequ, 0, 0, 1);}
-    | expArth tSUPE expArth {calc_exp_arth(&asm_supe, 0, 0, 1);;}
-    | expArth tSUP expArth {calc_exp_arth(&asm_sup, 0, 0, 1);}
-    | expArth tINFE expArth {calc_exp_arth(&asm_infe, 0, 0, 1);}
-    | expArth tINF expArth {calc_exp_arth(&asm_inf, 0, 0, 1);}
+expArth: tLPAR expArth tRPAR
+    | expArth tMUL expArth {calc_exp_arth(MUL, 0, 0, 1);}
+    | expArth tDIV expArth {calc_exp_arth(DIV, 0, 0, 1);}
+    | expArth tPLUS expArth {calc_exp_arth(ADD, 0, 0, 1);}
+    | expArth tMINUS expArth {calc_exp_arth(SOU, 0, 0, 1);}
+    | expArth tBOOLEQUAL expArth {calc_exp_arth(EQU, 0, 0, 1);}
+    | expArth tINEQUAL expArth {calc_exp_arth(NEQU, 0, 0, 1);}
+    | expArth tSUPE expArth {calc_exp_arth(SUPE, 0, 0, 1);;}
+    | expArth tSUP expArth {calc_exp_arth(SUP, 0, 0, 1);}
+    | expArth tINFE expArth {calc_exp_arth(INFE, 0, 0, 1);}
+    | expArth tINF expArth {calc_exp_arth(INF, 0, 0, 1);}
+    | expArth tANDBIN expArth {calc_exp_arth(AND, 0, 0, 1);}
+    | expArth tXORBIN expArth {calc_exp_arth(XOR, 0, 0, 1);}
+    | expArth tORBIN expArth {calc_exp_arth(OR, 0, 0, 1);}
+    | expArth tAND expArth {asm_log_or(0, 0, 1);}
+    | expArth tOR expArth {asm_log_and(0, 0, 1);}
     | val;
 
-val: tID {symbol *sym = get_symbol_from_name(table, yylval.text); symbol *temp = add_temporary_symbol_redirect(table, sym);}
-    | tINTVAL {symbol *temp = add_temporary_symbol(table, INT); asm_afc(0, yylval.nb),  asm_store(temp->address, 0);};
+val: tID {
+    symbol *sym = get_symbol_from_name(table, yylval.text, curr_depth);
+    
+    if (sym == NULL) {
+        printf("[ERROR] Non existing symbol %s\n", yylval.text);
+        exit(1);
+    }
+    add_temporary_symbol_redirect(table, sym);
+ }
+    | tINTVAL {
+        symbol *temp = add_temporary_symbol(table, INT);
+        asm_afc(0, yylval.nb);
+        asm_store(temp->address, 0);
+        };
 
 

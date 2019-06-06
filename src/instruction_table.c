@@ -15,20 +15,29 @@ const char* OPERATIONS_STR[] = {
     "LOAD",
     "STORE",
     "EQU",
+    "NEQU",
     "INF",
     "INFE",
     "SUP",
     "SUPE",
     "JMP",
     "JMPC",
-    "NEQU"
+    "JR",
+    "JRC",
+    "AND",
+    "OR",
+    "XOR",
+    "NOT",
 };
 
-int instr_table_init(instr_table **table, size_t size){
-    if ((*table = malloc(size * sizeof(instr_table))) == NULL) {
+int instr_table_init(instr_table **table, size_t size, size_t rewrite_size) {
+    if ((*table = malloc(sizeof(instr_table))) == NULL) {
         return -1;
     }
     if (((*table)->tab = malloc(size * sizeof(instr))) == NULL) {
+        return -1;
+    }
+    if (((*table)->tab_rewrite = malloc(rewrite_size * sizeof(instr))) == NULL) {
         return -1;
     }
     
@@ -37,14 +46,26 @@ int instr_table_init(instr_table **table, size_t size){
     return 0;
 }
 
-void instr_add(instr_table *table, operation ope, u8 val0, u8 val1, u8 val2) {
-
-    instr *instr = &(table->tab[++table->position]);
+instr *instr_add(instr_table *table, operation ope, u8 val0, u8 val1, u8 val2) {
+    instr *instr = &(table->tab[table->position++]);
     instr->ope = ope;
     instr->val0 = val0;
     instr->val1 = val1;
     instr->val2 = val2;
 
+    return instr;
+}
+
+instr_rewrite *instr_add_rewrite(instr_table *table, operation ope, u8 val0, u8 val1, u8 val2) {
+    instr* i = instr_add(table, ope, val0, val1, val2);
+    instr_rewrite * i_re = &table->tab_rewrite[table->position_rewrite++];
+    i_re->instruction = i; 
+    i_re->position = table->position;
+    return i_re;
+}
+
+instr_rewrite *instr_pop_rewrite(instr_table *table) {
+    return &table->tab_rewrite[--table->position_rewrite];
 }
 
 typedef struct instr_bin {
