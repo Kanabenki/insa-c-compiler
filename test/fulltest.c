@@ -7,7 +7,7 @@ main() {
     global1 = 3;
     global2 = 5;
     int local1 = 2 + global1;
-    while (global1 < 10) {
+    while (global1 < 30) {
         global1 = local1 + global1;
     }
     if (global2 | local1  & 7) {

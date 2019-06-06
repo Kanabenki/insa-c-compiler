@@ -78,7 +78,7 @@
 
     void rewrite_prev_jump() {
         instr * i = instr_pop_rewrite(tab_instr)->instruction;
-        u16 pos = tab_instr->position;
+        u16 pos = tab_instr->position * 4;
         i->val0 = HIGHB(pos);
         i->val1 = LOWB(pos);
     }
@@ -177,13 +177,12 @@ expr: exprL tEQUAL expArth tENDINST  {
         instr_add_rewrite(tab_instr, JMPC, 0, 0, 0);
     } body {
         instr_rewrite *ire = instr_pop_rewrite(tab_instr);
-        asm_jmp(ire->position);
+        asm_jmpc(ire->position * 4, 0);
         instr *i = ire->instruction;
-        u16 pos = tab_instr->position;
+        u16 pos = tab_instr->position * 4;
         i->val0 = HIGHB(pos);
         i->val1 = LOWB(pos);
-    } 
-//    | tFOR tLPAR trRPAR body ;
+    } ;
 ifExprs: ifExpr | ifExpr tELSE ifExprs | ifExpr tELSE body;
 ifExpr: tIF tLPAR expArth tRPAR {
         instr_add_rewrite(tab_instr, JMPC, 0, 0, 0);

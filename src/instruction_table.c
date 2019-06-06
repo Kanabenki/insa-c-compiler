@@ -60,7 +60,7 @@ instr_rewrite *instr_add_rewrite(instr_table *table, operation ope, u8 val0, u8 
     instr* i = instr_add(table, ope, val0, val1, val2);
     instr_rewrite * i_re = &table->tab_rewrite[table->position_rewrite++];
     i_re->instruction = i; 
-    i_re->position = table->position;
+    i_re->position = table->position-1;
     return i_re;
 }
 
